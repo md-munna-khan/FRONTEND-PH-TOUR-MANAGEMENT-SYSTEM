@@ -176,3 +176,9 @@ export default function About() {
   )
 }
 ```
+## 35-9 Defining Project Folder Structure and Development Methodology
+
+![alt text](image-11.png)
+- All Folder Structure
+![alt text](image-12.png)
+![alt text](image-13.png)

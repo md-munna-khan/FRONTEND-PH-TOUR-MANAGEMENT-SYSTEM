@@ -1,11 +1,3 @@
-# Ph Tour Management Frontend Part -2
-GitHub Link: https://github.com/Apollo-Level2-Web-Dev/ph-tour-management-system-frontend/tree/part-2
-
-## 36-1 Implementing Dark Theme Toggle
-
-#### use theme Error Handeling and Dark | light | system implement by shadcn document
-- provider => theme.provider.tsx
-```ts
 import { ThemeProviderContext } from "@/context/theme.context"
 import {  useEffect, useState } from "react"
 
@@ -60,33 +52,3 @@ export function ThemeProvider({
   )
 }
 
-```
-- hooks=> useTheme.tsx
-```ts
-import { ThemeProviderContext } from "@/context/theme.context"
-import { useContext } from "react"
-
-export const useTheme = () => {
-  const context = useContext(ThemeProviderContext)
-
-  if (context === undefined)
-    throw new Error("useTheme must be used within a ThemeProvider")
-
-  return context
-  ```
-  - context => themeContext.ts
- ```ts
-  import type { Theme } from "@/providers/theme.provider"
-import { createContext } from "react"
-
-type ThemeProviderState = {
-  theme: Theme
-  setTheme: (theme: Theme) => void
-}
-const initialState: ThemeProviderState = {
-  theme: "system",
-  setTheme: () => null,
-}
-
-export const ThemeProviderContext = createContext<ThemeProviderState>(initialState)
-```

@@ -182,3 +182,10 @@ export default function About() {
 - All Folder Structure
 ![alt text](image-12.png)
 ![alt text](image-13.png)
+
+## 35-10 Building Core UI Components: Navbar and Footer with Origin UI and Hyper UI
+- originUi https://originui.com/tree  get a navbar from this link
+
+- HyperUi  https://www.hyperui.dev/components/application get a footer from this link
+
+- logoIpsum https://logoipsum.com/ choose logo own choice

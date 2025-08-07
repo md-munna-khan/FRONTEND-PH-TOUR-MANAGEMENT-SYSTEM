@@ -189,3 +189,30 @@ export default function About() {
 - HyperUi  https://www.hyperui.dev/components/application get a footer from this link
 
 - logoIpsum https://logoipsum.com/ choose logo own choice
+
+## 35-11 Refining Spacing and Alignment for Visual Consistency
+- color choose  index.ts because we are use shadcn
+- use container and mx-auto  
+- commonLayout.ts
+
+```ts
+import React, { type ReactNode } from 'react'
+
+import Footer from './Footer'
+import Navbar from './Navbar'
+
+
+interface IProps{
+    children:ReactNode
+}
+
+export default function CommonLayout({children}:IProps) {
+  return (
+    <div className='min-h-screen flex flex-col'>
+    <Navbar/>
+     <div className='grow-1'> {children}</div>
+      <Footer/>
+    </div>
+  )
+}
+```

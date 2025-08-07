@@ -13,13 +13,24 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useForm } from "react-hook-form";
 import { data } from "react-router";
+import { zodResolver } from "@hookform/resolvers/zod"
+import { z } from "zod"
+const formSchema = z.object({
+  name: z.string().min(2).max(50),
+})
+
 
 export function RegisterForm({
   className,
   ...props
 }: React.HTMLAttributes<HTMLDivElement>) {
-  const form = useForm();
-  const onSubmit = (data) => {
+  const form = useForm <z.infer<typeof formSchema>>({
+    resolver:zodResolver(formSchema),
+    defaultValues:{
+      name:""
+    }
+  });
+  const onSubmit=(data:z.infer<typeof formSchema>) => {
     console.log(data);
   };
 
@@ -43,7 +54,7 @@ export function RegisterForm({
                   <FormControl>
                     <Input placeholder="shadcn" {...field} />
                   </FormControl>
-                  <FormDescription>
+                  <FormDescription className="sr-only">
                     This is your public display name.
                   </FormDescription>
                   <FormMessage />

@@ -101,3 +101,78 @@ https://ui.shadcn.com/docs/installation/vite
 and you check json file its all ok
 ![alt text](image-8.png)
 
+
+## 35-7 Configuring React Router for Page Navigation
+- add Dark Mood Your Server
+![alt text](image-9.png)
+
+- server port change 
+![alt text](image-10.png)
+
+#### Routing set up
+- main.tsx
+```ts
+import App from "@/App";
+import About from "@/pages/About";
+
+import { createBrowserRouter } from "react-router";
+
+export const router = createBrowserRouter([
+    {
+        Component:App,
+        path:"/",
+        children:[
+            {
+                Component:About,
+                path:"about"
+            }
+        ]
+    }
+])
+```
+- index.tsx
+```ts
+import App from "@/App";
+import About from "@/pages/About";
+
+import { createBrowserRouter } from "react-router";
+
+export const router = createBrowserRouter([
+    {
+        Component:App,
+        path:"/",
+        children:[
+            {
+                Component:About,
+                path:"about"
+            }
+        ]
+    }
+])
+```
+- App.tsx
+```ts
+
+import { Outlet } from 'react-router'
+
+export default function App() {
+  return (
+    <div>
+      <h1>This is a Simple React App Component</h1>
+   <Outlet/>
+    </div>
+  )
+}
+```
+- About.tsx
+```ts
+import React from 'react'
+
+export default function About() {
+  return (
+    <div>
+      <h1>About</h1>
+    </div>
+  )
+}
+```

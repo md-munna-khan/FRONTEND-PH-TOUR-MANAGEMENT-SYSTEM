@@ -10,10 +10,11 @@ import {
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod"
 import {  z } from "zod"
+import Password from "../../password";
 const formSchema = z.object({
   name: z.string().min(3,{
     error:"Name is too short"
@@ -21,6 +22,9 @@ const formSchema = z.object({
   email:z.email(),
   password:z.string().min(8,{error:"Password is Too short"}),
   confirmPassword:z.string().min(8,{error:"confirm Password is too Short"})
+}).refine((data)=> data.password === data.confirmPassword,{
+message:"Password Do not Match",
+path:["confirmPassword"]
 })
 
 
@@ -91,7 +95,7 @@ export function RegisterForm({
                 <FormItem>
                   <FormLabel>Password</FormLabel>
                   <FormControl>
-                    <Input placeholder="******" type="password" {...field} />
+                     <Password {...field}/>    
                   </FormControl>
                   <FormDescription className="sr-only">
                     This is your public display name.
@@ -107,7 +111,7 @@ export function RegisterForm({
                 <FormItem>
                   <FormLabel>confirmPassword</FormLabel>
                   <FormControl>
-                    <Input placeholder="*****" type="password" {...field} />
+                   <Password {...field}/>
                   </FormControl>
                   <FormDescription className="sr-only">
                     This is your public display name.
@@ -116,28 +120,10 @@ export function RegisterForm({
                 </FormItem>
               )}
             />
-            <Button type="submit">Submit</Button>
+            <Button type="submit" className="w-full">Submit</Button>
           </form>
         </Form>
-        <div className="grid gap-3">
-          <Label htmlFor="email">Email</Label>
-          <Input id="email" type="email" placeholder="m@example.com" required />
-        </div>
-        <div className="grid gap-3">
-          <div className="flex items-center">
-            <Label htmlFor="password">Password</Label>
-            <a
-              href="#"
-              className="ml-auto text-sm underline-offset-4 hover:underline"
-            >
-              Forgot your password?
-            </a>
-          </div>
-          <Input id="password" type="password" required />
-        </div>
-        <Button type="submit" className="w-full">
-          Submit
-        </Button>
+       
         <div className="after:border-border relative text-center text-sm after:absolute after:inset-0 after:top-1/2 after:z-0 after:flex after:items-center after:border-t">
           <span className="bg-background text-muted-foreground relative z-10 px-2">
             Or continue with

@@ -1025,3 +1025,46 @@ export function RegisterForm({
   );
 }
 ```
+## 36-7 Setting Up Redux for State Management
+- redux store.ts
+```ts
+import { configureStore } from '@reduxjs/toolkit'
+import { baseApi } from './baseApi'
+import { setupListeners } from '@reduxjs/toolkit/query'
+
+export const store = configureStore({
+  reducer: {
+    [baseApi.reducerPath]:baseApi.reducer
+  },
+    middleware: (getDefaultMiddleware) =>
+    getDefaultMiddleware().concat(baseApi.middleware),
+
+})
+// optional, but required for refetchOnFocus/refetchOnReconnect behaviors
+// see `setupListeners` docs - takes an optional callback as the 2nd arg for customization
+setupListeners(store.dispatch)
+// Infer the `RootState` and `AppDispatch` types from the store itself
+export type RootState = ReturnType<typeof store.getState>
+// Inferred type: {posts: PostsState, comments: CommentsState, users: UsersState}
+export type AppDispatch = typeof store.dispatch
+```
+- hook.ts
+```ts
+import { useDispatch, useSelector } from 'react-redux'
+import type { RootState, AppDispatch } from './store'
+
+// Use throughout your app instead of plain `useDispatch` and `useSelector`
+export const useAppDispatch = useDispatch.withTypes<AppDispatch>()
+export const useAppSelector = useSelector.withTypes<RootState>()
+```
+- redux => baseApi
+```ts
+
+import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react'
+
+export const baseApi = createApi({
+    reducerPath:"baseApi",
+    baseQuery:fetchBaseQuery({baseUrl:"http://localhost:5000/api/v1"}),
+    endpoints:() => ({})
+})  
+```

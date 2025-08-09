@@ -1025,3 +1025,132 @@ export function RegisterForm({
   );
 }
 ```
+## 36-7 Setting Up Redux for State Management
+- redux store.ts
+```ts
+import { configureStore } from '@reduxjs/toolkit'
+import { baseApi } from './baseApi'
+import { setupListeners } from '@reduxjs/toolkit/query'
+
+export const store = configureStore({
+  reducer: {
+    [baseApi.reducerPath]:baseApi.reducer
+  },
+    middleware: (getDefaultMiddleware) =>
+    getDefaultMiddleware().concat(baseApi.middleware),
+
+})
+// optional, but required for refetchOnFocus/refetchOnReconnect behaviors
+// see `setupListeners` docs - takes an optional callback as the 2nd arg for customization
+setupListeners(store.dispatch)
+// Infer the `RootState` and `AppDispatch` types from the store itself
+export type RootState = ReturnType<typeof store.getState>
+// Inferred type: {posts: PostsState, comments: CommentsState, users: UsersState}
+export type AppDispatch = typeof store.dispatch
+```
+- hook.ts
+```ts
+import { useDispatch, useSelector } from 'react-redux'
+import type { RootState, AppDispatch } from './store'
+
+// Use throughout your app instead of plain `useDispatch` and `useSelector`
+export const useAppDispatch = useDispatch.withTypes<AppDispatch>()
+export const useAppSelector = useSelector.withTypes<RootState>()
+```
+- redux => baseApi
+```ts
+
+import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react'
+
+export const baseApi = createApi({
+    reducerPath:"baseApi",
+    baseQuery:fetchBaseQuery({baseUrl:"http://localhost:5000/api/v1"}),
+    endpoints:() => ({})
+})  
+```
+## 36-8 Configuring Axios and Creating axiosBaseQuery
+
+
+  - index.ts
+  - env come to from .env file you must be setup this
+ ```ts
+  const config ={
+baseUrl:import.meta.env.VITE_BASE_URL
+}
+export default config
+```
+- axios.ts
+```ts
+import config from "@/config";
+import axios from "axios"
+
+export const axiosInstance = axios.create({
+  baseURL: config.baseUrl,
+});
+
+// Add a request interceptor
+axiosInstance.interceptors.request.use(function (config) {
+    // Do something before request is sent
+    return config;
+  }, function (error) {
+    // Do something with request error
+    return Promise.reject(error);
+  },
+
+);
+
+// Add a response interceptor
+axiosInstance.interceptors.response.use(function onFulfilled(response) {
+    // Any status code that lie within the range of 2xx cause this function to trigger
+    // Do something with response data
+    return response;
+  }, function onRejected(error) {
+    // Any status codes that falls outside the range of 2xx cause this function to trigger
+    // Do something with response error
+    return Promise.reject(error);
+  });
+  ```
+- axiosBaseQuery.ts
+```ts
+
+import { axiosInstance } from '@/lib/axios'
+import type { BaseQueryFn } from '@reduxjs/toolkit/query'
+
+import type { AxiosRequestConfig, AxiosError } from 'axios'
+
+const axiosBaseQuery =
+  (): BaseQueryFn<
+    {
+      url: string
+      method?: AxiosRequestConfig['method']
+      data?: AxiosRequestConfig['data']
+      params?: AxiosRequestConfig['params']
+      headers?: AxiosRequestConfig['headers']
+    },
+    unknown,
+    unknown
+  > =>
+  async ({ url, method, data, params, headers }) => {
+    try {
+      const result = await axiosInstance({
+        url: url,
+        method,
+        data,
+        params,
+        headers,
+      })
+      return { data: result.data }
+    } catch (axiosError) {
+      const err = axiosError as AxiosError
+      return {
+        error: {
+          status: err.response?.status,
+          data: err.response?.data || err.message,
+        },
+      }
+    }
+  };
+
+  export default axiosBaseQuery;
+  ```
+

@@ -1068,3 +1068,89 @@ export const baseApi = createApi({
     endpoints:() => ({})
 })  
 ```
+## 36-8 Configuring Axios and Creating axiosBaseQuery
+
+
+  - index.ts
+  - env come to from .env file you must be setup this
+ ```ts
+  const config ={
+baseUrl:import.meta.env.VITE_BASE_URL
+}
+export default config
+```
+- axios.ts
+```ts
+import config from "@/config";
+import axios from "axios"
+
+export const axiosInstance = axios.create({
+  baseURL: config.baseUrl,
+});
+
+// Add a request interceptor
+axiosInstance.interceptors.request.use(function (config) {
+    // Do something before request is sent
+    return config;
+  }, function (error) {
+    // Do something with request error
+    return Promise.reject(error);
+  },
+
+);
+
+// Add a response interceptor
+axiosInstance.interceptors.response.use(function onFulfilled(response) {
+    // Any status code that lie within the range of 2xx cause this function to trigger
+    // Do something with response data
+    return response;
+  }, function onRejected(error) {
+    // Any status codes that falls outside the range of 2xx cause this function to trigger
+    // Do something with response error
+    return Promise.reject(error);
+  });
+  ```
+- axiosBaseQuery.ts
+```ts
+
+import { axiosInstance } from '@/lib/axios'
+import type { BaseQueryFn } from '@reduxjs/toolkit/query'
+
+import type { AxiosRequestConfig, AxiosError } from 'axios'
+
+const axiosBaseQuery =
+  (): BaseQueryFn<
+    {
+      url: string
+      method?: AxiosRequestConfig['method']
+      data?: AxiosRequestConfig['data']
+      params?: AxiosRequestConfig['params']
+      headers?: AxiosRequestConfig['headers']
+    },
+    unknown,
+    unknown
+  > =>
+  async ({ url, method, data, params, headers }) => {
+    try {
+      const result = await axiosInstance({
+        url: url,
+        method,
+        data,
+        params,
+        headers,
+      })
+      return { data: result.data }
+    } catch (axiosError) {
+      const err = axiosError as AxiosError
+      return {
+        error: {
+          status: err.response?.status,
+          data: err.response?.data || err.message,
+        },
+      }
+    }
+  };
+
+  export default axiosBaseQuery;
+  ```
+

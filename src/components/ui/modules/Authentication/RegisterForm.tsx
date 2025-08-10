@@ -12,37 +12,60 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
 import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod"
-import {  z } from "zod"
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
 import Password from "../../password";
-const formSchema = z.object({
-  name: z.string().min(3,{
-    error:"Name is too short"
-  }).max(50),
-  email:z.email(),
-  password:z.string().min(8,{error:"Password is Too short"}),
-  confirmPassword:z.string().min(8,{error:"confirm Password is too Short"})
-}).refine((data)=> data.password === data.confirmPassword,{
-message:"Password Do not Match",
-path:["confirmPassword"]
-})
+import { useRegisterMutation } from "@/redux/features/auth/auth.api";
+import { toast } from "sonner";
 
+
+
+const formSchema = z
+  .object({
+    name: z
+      .string()
+      .min(3, {
+        error: "Name is too short",
+      })
+      .max(50),
+    email: z.email(),
+    password: z.string().min(8, { error: "Password is Too short" }),
+    confirmPassword: z
+      .string()
+      .min(8, { error: "confirm Password is too Short" }),
+  })
+  .refine((data) => data.password === data.confirmPassword, {
+    message: "Password Do not Match",
+    path: ["confirmPassword"],
+  });
 
 export function RegisterForm({
   className,
   ...props
 }: React.HTMLAttributes<HTMLDivElement>) {
-  const form = useForm <z.infer<typeof formSchema>>({
-    resolver:zodResolver(formSchema),
-    defaultValues:{
-      name:"",
-      email:"",
-      password:"",
-      confirmPassword:""
-    }
+  const [register] = useRegisterMutation();
+  const form = useForm<z.infer<typeof formSchema>>({
+    resolver: zodResolver(formSchema),
+    defaultValues: {
+      name: "",
+      email: "",
+      password: "",
+      confirmPassword: "",
+    },
   });
-  const onSubmit=(data:z.infer<typeof formSchema>) => {
-    console.log(data);
+  const onSubmit = async (data: z.infer<typeof formSchema>) => {
+    const userInfo = {
+      name: data.name,
+      email: data.email,
+      password: data.password,
+    };
+    try {
+      const result = await register(userInfo).unwrap();
+      console.log(result);
+      toast.success("User created successfully")
+    } catch (error) {
+      console.log(error);
+    }
   };
 
   return (
@@ -79,7 +102,11 @@ export function RegisterForm({
                 <FormItem>
                   <FormLabel>Email</FormLabel>
                   <FormControl>
-                    <Input placeholder="munna@gmail.com" type="email" {...field} />
+                    <Input
+                      placeholder="munna@gmail.com"
+                      type="email"
+                      {...field}
+                    />
                   </FormControl>
                   <FormDescription className="sr-only">
                     This is your public Email name.
@@ -95,7 +122,7 @@ export function RegisterForm({
                 <FormItem>
                   <FormLabel>Password</FormLabel>
                   <FormControl>
-                     <Password {...field}/>    
+                    <Password {...field} />
                   </FormControl>
                   <FormDescription className="sr-only">
                     This is your public display name.
@@ -111,7 +138,7 @@ export function RegisterForm({
                 <FormItem>
                   <FormLabel>confirmPassword</FormLabel>
                   <FormControl>
-                   <Password {...field}/>
+                    <Password {...field} />
                   </FormControl>
                   <FormDescription className="sr-only">
                     This is your public display name.
@@ -120,10 +147,12 @@ export function RegisterForm({
                 </FormItem>
               )}
             />
-            <Button type="submit" className="w-full">Submit</Button>
+            <Button type="submit" className="w-full">
+              Submit
+            </Button>
           </form>
         </Form>
-       
+
         <div className="after:border-border relative text-center text-sm after:absolute after:inset-0 after:top-1/2 after:z-0 after:flex after:items-center after:border-t">
           <span className="bg-background text-muted-foreground relative z-10 px-2">
             Or continue with

@@ -18,6 +18,9 @@ export default function Verify() {
   const location=useLocation()
   const navigate = useNavigate()
   const [email]=useState(location.state);
+
+const [confirmed,setConfirmed]=useState(false)
+
   const form = useForm<z.infer<typeof FormSchema>>({
     resolver: zodResolver(FormSchema),
     defaultValues: {
@@ -36,7 +39,7 @@ export default function Verify() {
   // console.log(location)
   return (
     <div className='grid place-content-center h-screen'>
-     <Card>
+    {confirmed ?( <Card>
   <CardHeader>
     <CardTitle>Verify Your Email Address</CardTitle>
     <CardDescription>Please Enter the 6-digit code We sent To <br/> {email}
@@ -47,7 +50,7 @@ export default function Verify() {
     <Form {...form}>
       <form 
       id="otp-form"
-      onSubmit={form.handleSubmit(onSubmit)} className="w-2/3 space-y-6">
+      onSubmit={form.handleSubmit(onSubmit)} className=" space-y-6">
         <FormField
           control={form.control}
           name="pin"
@@ -58,16 +61,26 @@ export default function Verify() {
                 <InputOTP maxLength={6} {...field}>
                   <InputOTPGroup>
                     <InputOTPSlot index={0} />
+                  </InputOTPGroup>
+                  <InputOTPGroup>
                     <InputOTPSlot index={1} />
+                  </InputOTPGroup>
+                  <InputOTPGroup>
                     <InputOTPSlot index={2} />
+                  </InputOTPGroup>
+                  <InputOTPGroup>
                     <InputOTPSlot index={3} />
+                  </InputOTPGroup>
+                  <InputOTPGroup>
                     <InputOTPSlot index={4} />
+                  </InputOTPGroup>
+                  <InputOTPGroup>
                     <InputOTPSlot index={5} />
                   </InputOTPGroup>
                 </InputOTP>
               </FormControl>
               <FormDescription>
-                Please enter the one-time password sent to your phone.
+            
               </FormDescription>
               <FormMessage />
             </FormItem>
@@ -80,7 +93,20 @@ export default function Verify() {
   <CardFooter className='flex justify-end '>
     <Button form="otp-form" type="submit">Submit</Button>
   </CardFooter>
-</Card>
+     </Card>):(  <Card>
+  <CardHeader>
+    <CardTitle>Verify Your Email Address</CardTitle>
+    <CardDescription>We Will send you an OTP at  <br/> {email}
+    </CardDescription>
+  
+  </CardHeader>
+ 
+  <CardFooter className='flex justify-end '>
+    <Button className="w-[300px]">Confirm</Button>
+  </CardFooter>
+     </Card>)}
+
+     
     </div>
   )
 }

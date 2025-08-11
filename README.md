@@ -92,3 +92,4 @@ export default function Verify() {
 }
 
 ```
+## 37-2 Sending OTP Code with Type-Safe RTK Query Mutation

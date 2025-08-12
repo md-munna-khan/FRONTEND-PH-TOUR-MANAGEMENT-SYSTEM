@@ -3,10 +3,12 @@ import { Button } from '@/components/ui/button';
 import { Card,  CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { InputOTP, InputOTPGroup, InputOTPSlot } from '@/components/ui/input-otp';
+import { useSendOtpMutation } from '@/redux/features/auth/auth.api';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useEffect, useState } from 'react'
 import { useForm } from 'react-hook-form';
 import { useLocation, useNavigate } from 'react-router'
+import { toast } from 'sonner';
 import z from 'zod';
 
 const FormSchema = z.object({
@@ -18,6 +20,7 @@ export default function Verify() {
   const location=useLocation()
   const navigate = useNavigate()
   const [email]=useState(location.state);
+  const [sendOtp]= useSendOtpMutation()
 
 const [confirmed,setConfirmed]=useState(false)
 
@@ -27,6 +30,20 @@ const [confirmed,setConfirmed]=useState(false)
       pin: "",
     },
   })
+const handleConfirm =async () =>{
+  try {
+   const res = await sendOtp({email:email}).unwrap()
+   if(res.success){
+    toast.success("OTP sent")
+   }
+    setConfirmed(true);
+
+  } catch (error) {
+    console.log(error)
+  }
+
+}
+
   const onSubmit=(data: z.infer<typeof FormSchema>)=>{
     console.log(data)
   }
@@ -102,7 +119,7 @@ const [confirmed,setConfirmed]=useState(false)
   </CardHeader>
  
   <CardFooter className='flex justify-end '>
-    <Button className="w-[300px]">Confirm</Button>
+    <Button onClick={handleConfirm} className="w-[300px]">Confirm</Button>
   </CardFooter>
      </Card>)}
 

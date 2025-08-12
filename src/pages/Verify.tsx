@@ -3,7 +3,7 @@ import { Button } from '@/components/ui/button';
 import { Card,  CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { InputOTP, InputOTPGroup, InputOTPSlot } from '@/components/ui/input-otp';
-import { useSendOtpMutation } from '@/redux/features/auth/auth.api';
+import { useSendOtpMutation, useVerifyOtpMutation } from '@/redux/features/auth/auth.api';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useEffect, useState } from 'react'
 import { useForm } from 'react-hook-form';
@@ -20,7 +20,8 @@ export default function Verify() {
   const location=useLocation()
   const navigate = useNavigate()
   const [email]=useState(location.state);
-  const [sendOtp]= useSendOtpMutation()
+  const [sendOtp]= useSendOtpMutation();
+  const[verifyOtp]=useVerifyOtpMutation()
 
 const [confirmed,setConfirmed]=useState(false)
 
@@ -31,21 +32,34 @@ const [confirmed,setConfirmed]=useState(false)
     },
   })
 const handleConfirm =async () =>{
+  const toastId = toast.loading("Sending OTP")
   try {
    const res = await sendOtp({email:email}).unwrap()
    if(res.success){
-    toast.success("OTP sent")
-   }
+    toast.success("OTP sent",{id:toastId})
     setConfirmed(true);
-
+   }
   } catch (error) {
     console.log(error)
   }
 
 }
 
-  const onSubmit=(data: z.infer<typeof FormSchema>)=>{
-    console.log(data)
+const onSubmit=async (data: z.infer<typeof FormSchema>)=>{
+  const toastId = toast.loading("Verifying OTP")
+const userInfo = {
+  email,
+  otp:data.pin
+}
+try {
+   const res = await verifyOtp(userInfo).unwrap()
+   if(res.success){
+    toast.success("OTP Verified",{id:toastId})
+    setConfirmed(true);
+   }
+} catch (error) {
+  console.log(error)
+}
   }
 
   // useEffect(()=>{

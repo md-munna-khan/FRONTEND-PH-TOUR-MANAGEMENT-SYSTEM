@@ -860,3 +860,126 @@ SameSite → Reduces CSRF risk.
 Drawback:
 
 Slightly harder to manage with APIs like fetch (need credentials: "include").
+
+## 37-7 Accessing Cookies on the Client Side
+- update backend setCookie.ts
+- secure true if not true cookie not save in browser
+```ts
+import { Response } from "express";
+
+export interface AuthCookies {
+  accessToken?: string;
+  refreshToken?: string;
+}
+
+export const setAuthCookie = (res: Response, tokenInfo: AuthCookies) => {
+  if (tokenInfo.accessToken) {
+      res.cookie("accessToken", tokenInfo.accessToken, {
+      httpOnly: true,
+      secure: true,
+      sameSite:"none"
+    });
+  }
+  if (tokenInfo.refreshToken) {
+      res.cookie("refreshToken", tokenInfo.refreshToken, {
+      httpOnly: true,
+      secure: true,
+      sameSite:"none"
+    });
+  }
+};
+
+// before deploy
+// import { Response } from "express";
+
+// export interface AuthCookies {
+//   accessToken?: string;
+//   refreshToken?: string;
+// }
+
+// export const setAuthCookie = (res: Response, tokenInfo: AuthCookies) => {
+//   if (tokenInfo.accessToken) {
+//       res.cookie("accessToken", tokenInfo.accessToken, {
+//       httpOnly: true,
+//       sameSite:false
+//     });
+//   }
+//   if (tokenInfo.refreshToken) {
+//       res.cookie("refreshToken", tokenInfo.refreshToken, {
+//       httpOnly: true,
+ 
+//        sameSite:false
+//     });
+//   }
+// };
+```
+- baseApi.ts
+- if you not work axios update this as like
+```ts
+import { createApi, fetchBaseQuery} from '@reduxjs/toolkit/query/react'
+import axiosBaseQuery from './axiosBaseQuery'
+
+export const baseApi = createApi({
+    reducerPath:"baseApi",
+    // baseQuery:axiosBaseQuery(),
+      baseQuery:fetchBaseQuery({
+        baseUrl:config.baseUrl,
+        credentials:"include"
+    }),
+    endpoints:() => ({})
+})  
+```
+## 37-8 Implementing Google Login and Fixing Backend Authorization   
+- axios.ts must be add withCredentials: true
+```ts
+import config from "@/config";
+import axios from "axios"
+
+export const axiosInstance = axios.create({
+  baseURL: config.baseUrl,
+  withCredentials:true
+});
+
+
+// Add a request interceptor
+axiosInstance.interceptors.request.use(function (config) {
+    // Do something before request is sent
+    return config;
+  }, function (error) {
+    // Do something with request error
+    return Promise.reject(error);
+  },
+
+);
+
+// Add a response interceptor
+axiosInstance.interceptors.response.use(function onFulfilled(response) {
+    // Any status code that lie within the range of 2xx cause this function to trigger
+    // Do something with response data
+    return response;
+  }, function onRejected(error) {
+    // Any status codes that falls outside the range of 2xx cause this function to trigger
+    // Do something with response error
+    return Promise.reject(error);
+  });
+```
+
+- update backend checkAuth
+```ts
+const accessToken = req.headers.authorization ||✅ req.cookies.accessToken;
+    if(!accessToken){
+      throw new AppError(403,"No token Received");
+      
+    }
+```
+- loginForm.tsx
+```ts
+  <Button
+        onClick={()=> window.open(`${config.baseUrl}/auth/google`)}
+          type="button"
+          variant="outline"
+          className="w-full cursor-pointer"
+        >
+          Login with Google
+        </Button>
+```

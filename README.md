@@ -860,3 +860,72 @@ SameSite → Reduces CSRF risk.
 Drawback:
 
 Slightly harder to manage with APIs like fetch (need credentials: "include").
+
+## 37-7 Accessing Cookies on the Client Side
+- update backend setCookie.ts
+- secure true if not true cookie not save in browser
+```ts
+import { Response } from "express";
+
+export interface AuthCookies {
+  accessToken?: string;
+  refreshToken?: string;
+}
+
+export const setAuthCookie = (res: Response, tokenInfo: AuthCookies) => {
+  if (tokenInfo.accessToken) {
+      res.cookie("accessToken", tokenInfo.accessToken, {
+      httpOnly: true,
+      secure: true,
+      sameSite:"none"
+    });
+  }
+  if (tokenInfo.refreshToken) {
+      res.cookie("refreshToken", tokenInfo.refreshToken, {
+      httpOnly: true,
+      secure: true,
+      sameSite:"none"
+    });
+  }
+};
+
+// before deploy
+// import { Response } from "express";
+
+// export interface AuthCookies {
+//   accessToken?: string;
+//   refreshToken?: string;
+// }
+
+// export const setAuthCookie = (res: Response, tokenInfo: AuthCookies) => {
+//   if (tokenInfo.accessToken) {
+//       res.cookie("accessToken", tokenInfo.accessToken, {
+//       httpOnly: true,
+//       sameSite:false
+//     });
+//   }
+//   if (tokenInfo.refreshToken) {
+//       res.cookie("refreshToken", tokenInfo.refreshToken, {
+//       httpOnly: true,
+ 
+//        sameSite:false
+//     });
+//   }
+// };
+```
+- baseApi.ts
+- if you not work axios update this as like
+```ts
+import { createApi, fetchBaseQuery} from '@reduxjs/toolkit/query/react'
+import axiosBaseQuery from './axiosBaseQuery'
+
+export const baseApi = createApi({
+    reducerPath:"baseApi",
+    // baseQuery:axiosBaseQuery(),
+      baseQuery:fetchBaseQuery({
+        baseUrl:config.baseUrl,
+        credentials:"include"
+    }),
+    endpoints:() => ({})
+})  
+```

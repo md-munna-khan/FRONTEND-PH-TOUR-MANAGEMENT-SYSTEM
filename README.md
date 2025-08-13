@@ -929,3 +929,57 @@ export const baseApi = createApi({
     endpoints:() => ({})
 })  
 ```
+## 37-8 Implementing Google Login and Fixing Backend Authorization   
+- axios.ts must be add withCredentials: true
+```ts
+import config from "@/config";
+import axios from "axios"
+
+export const axiosInstance = axios.create({
+  baseURL: config.baseUrl,
+  withCredentials:true
+});
+
+
+// Add a request interceptor
+axiosInstance.interceptors.request.use(function (config) {
+    // Do something before request is sent
+    return config;
+  }, function (error) {
+    // Do something with request error
+    return Promise.reject(error);
+  },
+
+);
+
+// Add a response interceptor
+axiosInstance.interceptors.response.use(function onFulfilled(response) {
+    // Any status code that lie within the range of 2xx cause this function to trigger
+    // Do something with response data
+    return response;
+  }, function onRejected(error) {
+    // Any status codes that falls outside the range of 2xx cause this function to trigger
+    // Do something with response error
+    return Promise.reject(error);
+  });
+```
+
+- update backend checkAuth
+```ts
+const accessToken = req.headers.authorization ||✅ req.cookies.accessToken;
+    if(!accessToken){
+      throw new AppError(403,"No token Received");
+      
+    }
+```
+- loginForm.tsx
+```ts
+  <Button
+        onClick={()=> window.open(`${config.baseUrl}/auth/google`)}
+          type="button"
+          variant="outline"
+          className="w-full cursor-pointer"
+        >
+          Login with Google
+        </Button>
+```

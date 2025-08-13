@@ -809,3 +809,54 @@ export default function Verify() {
   );
 }
 ```
+## 37-6 Exploring Token Management Strategies and Choosing the Right Approach
+- token save 
+- 1 local storage not save ❌
+Problem:
+
+Vulnerable to XSS attacks (any malicious JS on your site can read it).
+
+Stays in browser storage indefinitely unless explicitly removed.
+
+Attackers can steal it if they inject JS into your site.
+```ts
+localStorage.setItem("token", "your-jwt-token");
+```
+
+- 2 local storage not save ❌ because when page reload token removed
+Difference from localStorage:
+
+Data is removed automatically when the tab/window is closed.
+
+Still vulnerable to XSS attacks because JavaScript can read it.
+
+You said: “when page reload token removed” —
+Actually, sessionStorage survives a reload but not a full tab close.
+If your token disappears on reload, it might mean you're storing it in a React state instead of sessionStorage.
+```ts
+sessionStorage.setItem("token", "your-jwt-token");
+```
+
+- 3 token save in http only cookie ✅
+Token is sent from server as a Set-Cookie header:
+
+```bash
+Set-Cookie: token=your-jwt-token; HttpOnly; Secure; SameSite=Strict
+```
+Browser stores it automatically.
+
+You don’t manage it with localStorage or sessionStorage.
+
+The cookie is sent automatically with every request to the server (based on domain).
+
+Why it’s better:
+
+HttpOnly → JavaScript cannot access it (prevents XSS theft).
+
+Secure → Sent only over HTTPS.
+
+SameSite → Reduces CSRF risk.
+
+Drawback:
+
+Slightly harder to manage with APIs like fetch (need credentials: "include").

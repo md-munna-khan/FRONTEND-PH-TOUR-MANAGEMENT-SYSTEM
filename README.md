@@ -1,1090 +1,472 @@
-# Ph Tour Management frontend Part-3
-GitHub Link: https://github.com/Apollo-Level2-Web-Dev/ph-tour-management-system-frontend/tree/part-3
+GitHub Link: https://github.com/Apollo-Level2-Web-Dev/ph-tour-management-system-frontend/tree/part-4
 
-## 37-1 Creating the OTP Input Card Interface
-- verify.tsx
+Ph tour Management Frontend Part-4
+## 38-1 Setting Up the Dashboard and Admin Routes
+- index.tsx
 ```ts
+import App from "@/App";
+import DashboardLayout from "@/components/ui/layout/DashboardLayout";
 
-import { Button } from '@/components/ui/button';
-import { Card,  CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
-import { InputOTP, InputOTPGroup, InputOTPSlot } from '@/components/ui/input-otp';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { useEffect, useState } from 'react'
-import { useForm } from 'react-hook-form';
-import { useLocation, useNavigate } from 'react-router'
-import z from 'zod';
+import About from "@/pages/About";
+import AddTour from "@/pages/Admin/AddTour";
+import Analytics from "@/pages/Admin/Analytics";
+import Login from "@/pages/login";
+import Register from "@/pages/Register";
+import Bookings from "@/pages/User/Bookings";
+import Verify from "@/pages/Verify";
 
-const FormSchema = z.object({
-  pin: z.string().min(6, {
-    message: "Your one-time password must be 6 characters.",
-  }),
-})
-export default function Verify() {
-  const location=useLocation()
-  const navigate = useNavigate()
-  const [email]=useState(location.state);
-  const form = useForm<z.infer<typeof FormSchema>>({
-    resolver: zodResolver(FormSchema),
-    defaultValues: {
-      pin: "",
+
+
+import { createBrowserRouter } from "react-router";
+
+export const router = createBrowserRouter([
+    {
+        Component:App,
+        path:"/",
+        children:[
+            {
+                Component:About,
+                path:"about"
+            }
+        ]
     },
-  })
-  const onSubmit=(data: z.infer<typeof FormSchema>)=>{
-    console.log(data)
-  }
-
-  // useEffect(()=>{
-  //   if(!email){
-  //     navigate("/")
-  //   }
-  // },[email])
-  // console.log(location)
-  return (
-    <div className='grid place-content-center h-screen'>
-     <Card>
-  <CardHeader>
-    <CardTitle>Verify Your Email Address</CardTitle>
-    <CardDescription>Please Enter the 6-digit code We sent To <br/> {email}
-    </CardDescription>
-  
-  </CardHeader>
-  <CardContent>
-    <Form {...form}>
-      <form 
-      id="otp-form"
-      onSubmit={form.handleSubmit(onSubmit)} className="w-2/3 space-y-6">
-        <FormField
-          control={form.control}
-          name="pin"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>One-Time Password</FormLabel>
-              <FormControl>
-                <InputOTP maxLength={6} {...field}>
-                  <InputOTPGroup>
-                    <InputOTPSlot index={0} />
-                    <InputOTPSlot index={1} />
-                    <InputOTPSlot index={2} />
-                    <InputOTPSlot index={3} />
-                    <InputOTPSlot index={4} />
-                    <InputOTPSlot index={5} />
-                  </InputOTPGroup>
-                </InputOTP>
-              </FormControl>
-              <FormDescription>
-                Please enter the one-time password sent to your phone.
-              </FormDescription>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-    
-      </form>
-    </Form>
-  </CardContent>
-  <CardFooter className='flex justify-end '>
-    <Button form="otp-form" type="submit">Submit</Button>
-  </CardFooter>
-</Card>
-    </div>
-  )
-}
-
-```
-## 37-2 Sending OTP Code with Type-Safe RTK Query Mutation
-
-- types => index.ts
-- all types collect to type folder 
-```ts
-export type {ISendOtp,ILogin} from "./auth.type";
-
-export interface IResponse<T> {
-  statusCode: number
-  success: boolean
-  message: string
-  data: T
-}
-```
-- auth.type.ts
-```ts
-export interface ISendOtp{
-  email:string
-}
-
-export interface ILogin{
-    email:string,
-    password:string
-}
-```
-- auth.api.ts
-- first peramater IResponse generic second result
-```ts
-  sendOtp: builder.mutation<IResponse<null>,ISendOtp>({
-      query: (userInfo) => ({
-        url: "/otp/send",
-        method: "POST",
-        data: userInfo,
-      }),
-    }),
-```
-
-- verify.ts
-```ts
-
-import { Button } from '@/components/ui/button';
-import { Card,  CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
-import { InputOTP, InputOTPGroup, InputOTPSlot } from '@/components/ui/input-otp';
-import { useSendOtpMutation } from '@/redux/features/auth/auth.api';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { useEffect, useState } from 'react'
-import { useForm } from 'react-hook-form';
-import { useLocation, useNavigate } from 'react-router'
-import { toast } from 'sonner';
-import z from 'zod';
-
-const FormSchema = z.object({
-  pin: z.string().min(6, {
-    message: "Your one-time password must be 6 characters.",
-  }),
-})
-export default function Verify() {
-  const location=useLocation()
-  const navigate = useNavigate()
-  const [email]=useState(location.state);
-  const [sendOtp]= useSendOtpMutation()
-
-const [confirmed,setConfirmed]=useState(false)
-
-  const form = useForm<z.infer<typeof FormSchema>>({
-    resolver: zodResolver(FormSchema),
-    defaultValues: {
-      pin: "",
+    {
+      Component:DashboardLayout,
+      path:"/admin",
+      children:[
+        {
+          Component:Analytics,
+          path:"analytics"
+        },
+        {
+          Component:AddTour,
+          path:"add-tour"
+        }
+      ]
     },
-  })
-const handleConfirm =async () =>{
-  try {
-   const res = await sendOtp({email:email}).unwrap()
-   if(res.success){
-    toast.success("OTP sent")
-   }
-    setConfirmed(true);
-
-  } catch (error) {
-    console.log(error)
-  }
-
-}
-
-  const onSubmit=(data: z.infer<typeof FormSchema>)=>{
-    console.log(data)
-  }
-
-  // useEffect(()=>{
-  //   if(!email){
-  //     navigate("/")
-  //   }
-  // },[email])
-  // console.log(location)
-  return (
-    <div className='grid place-content-center h-screen'>
-    {confirmed ?( <Card>
-  <CardHeader>
-    <CardTitle>Verify Your Email Address</CardTitle>
-    <CardDescription>Please Enter the 6-digit code We sent To <br/> {email}
-    </CardDescription>
-  
-  </CardHeader>
-  <CardContent>
-    <Form {...form}>
-      <form 
-      id="otp-form"
-      onSubmit={form.handleSubmit(onSubmit)} className=" space-y-6">
-        <FormField
-          control={form.control}
-          name="pin"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>One-Time Password</FormLabel>
-              <FormControl>
-                <InputOTP maxLength={6} {...field}>
-                  <InputOTPGroup>
-                    <InputOTPSlot index={0} />
-                  </InputOTPGroup>
-                  <InputOTPGroup>
-                    <InputOTPSlot index={1} />
-                  </InputOTPGroup>
-                  <InputOTPGroup>
-                    <InputOTPSlot index={2} />
-                  </InputOTPGroup>
-                  <InputOTPGroup>
-                    <InputOTPSlot index={3} />
-                  </InputOTPGroup>
-                  <InputOTPGroup>
-                    <InputOTPSlot index={4} />
-                  </InputOTPGroup>
-                  <InputOTPGroup>
-                    <InputOTPSlot index={5} />
-                  </InputOTPGroup>
-                </InputOTP>
-              </FormControl>
-              <FormDescription>
-            
-              </FormDescription>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-    
-      </form>
-    </Form>
-  </CardContent>
-  <CardFooter className='flex justify-end '>
-    <Button form="otp-form" type="submit">Submit</Button>
-  </CardFooter>
-     </Card>):(  <Card>
-  <CardHeader>
-    <CardTitle>Verify Your Email Address</CardTitle>
-    <CardDescription>We Will send you an OTP at  <br/> {email}
-    </CardDescription>
-  
-  </CardHeader>
- 
-  <CardFooter className='flex justify-end '>
-    <Button onClick={handleConfirm} className="w-[300px]">Confirm</Button>
-  </CardFooter>
-     </Card>)}
-
-     
-    </div>
-  )
-}
-
-```
-
-## 37-3 Verifying OTP and Handling User Login
-
-- types => index.ts
-- all types collect to type folder 
-```ts
-export type {ISendOtp,ILogin, IVerifyOtp} from "./auth.type";
-```
-- auth.type.ts
-```ts
-export interface IVerifyOtp{
-    email:string,
-   otp:string
-}
-```
-- auth.api.ts
-- first peramater IResponse generic second result
-```ts
-  verifyOtp: builder.mutation<IResponse<null>,IVerifyOtp>({
-      query: (userInfo) => ({
-        url: "/otp/verify",
-        method: "POST",
-        data: userInfo,
-      }),
-    }),
-```
-
-- verify.ts
-```ts
-
-import { Button } from '@/components/ui/button';
-import { Card,  CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
-import { InputOTP, InputOTPGroup, InputOTPSlot } from '@/components/ui/input-otp';
-import { useSendOtpMutation, useVerifyOtpMutation } from '@/redux/features/auth/auth.api';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { useEffect, useState } from 'react'
-import { useForm } from 'react-hook-form';
-import { useLocation, useNavigate } from 'react-router'
-import { toast } from 'sonner';
-import z from 'zod';
-
-const FormSchema = z.object({
-  pin: z.string().min(6, {
-    message: "Your one-time password must be 6 characters.",
-  }),
-})
-export default function Verify() {
-  const location=useLocation()
-  const navigate = useNavigate()
-  const [email]=useState(location.state);
-  const [sendOtp]= useSendOtpMutation();
-  const[verifyOtp]=useVerifyOtpMutation()
-
-const [confirmed,setConfirmed]=useState(false)
-
-  const form = useForm<z.infer<typeof FormSchema>>({
-    resolver: zodResolver(FormSchema),
-    defaultValues: {
-      pin: "",
+    {
+      Component:DashboardLayout,
+      path:"/user",
+      children:[
+        {
+          Component:Bookings,
+          path:"bookings"
+        }
+      ]
     },
-  })
-const handleConfirm =async () =>{
-  const toastId = toast.loading("Sending OTP")
-  try {
-   const res = await sendOtp({email:email}).unwrap()
-   if(res.success){
-    toast.success("OTP sent",{id:toastId})
-    setConfirmed(true);
-   }
-  } catch (error) {
-    console.log(error)
-  }
-
-}
-
-const onSubmit=async (data: z.infer<typeof FormSchema>)=>{
-  const toastId = toast.loading("Verifying OTP")
-const userInfo = {
-  email,
-  otp:data.pin
-}
-try {
-   const res = await verifyOtp(userInfo).unwrap()
-   if(res.success){
-    toast.success("OTP Verified",{id:toastId})
-    setConfirmed(true);
-   }
-} catch (error) {
-  console.log(error)
-}
-  }
-
-  // useEffect(()=>{
-  //   if(!email){
-  //     navigate("/")
-  //   }
-  // },[email])
-  // console.log(location)
-  return (
-    <div className='grid place-content-center h-screen'>
-    {confirmed ?( <Card>
-  <CardHeader>
-    <CardTitle>Verify Your Email Address</CardTitle>
-    <CardDescription>Please Enter the 6-digit code We sent To <br/> {email}
-    </CardDescription>
+    {
+    Component: Login,
+    path: "/login",
+  },
+  {
+    Component: Register,
+    path: "/register",
+  },
+  {
+    Component: Verify,
+    path: "/verify",
+  },
   
-  </CardHeader>
-  <CardContent>
-    <Form {...form}>
-      <form 
-      id="otp-form"
-      onSubmit={form.handleSubmit(onSubmit)} className=" space-y-6">
-        <FormField
-          control={form.control}
-          name="pin"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>One-Time Password</FormLabel>
-              <FormControl>
-                <InputOTP maxLength={6} {...field}>
-                  <InputOTPGroup>
-                    <InputOTPSlot index={0} />
-                  </InputOTPGroup>
-                  <InputOTPGroup>
-                    <InputOTPSlot index={1} />
-                  </InputOTPGroup>
-                  <InputOTPGroup>
-                    <InputOTPSlot index={2} />
-                  </InputOTPGroup>
-                  <InputOTPGroup>
-                    <InputOTPSlot index={3} />
-                  </InputOTPGroup>
-                  <InputOTPGroup>
-                    <InputOTPSlot index={4} />
-                  </InputOTPGroup>
-                  <InputOTPGroup>
-                    <InputOTPSlot index={5} />
-                  </InputOTPGroup>
-                </InputOTP>
-              </FormControl>
-              <FormDescription>
-            
-              </FormDescription>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-    
-      </form>
-    </Form>
-  </CardContent>
-  <CardFooter className='flex justify-end '>
-    <Button form="otp-form" type="submit">Submit</Button>
-  </CardFooter>
-     </Card>):(  <Card>
-  <CardHeader>
-    <CardTitle>Verify Your Email Address</CardTitle>
-    <CardDescription>We Will send you an OTP at  <br/> {email}
-    </CardDescription>
-  
-  </CardHeader>
- 
-  <CardFooter className='flex justify-end '>
-    <Button onClick={handleConfirm} className="w-[300px]">Confirm</Button>
-  </CardFooter>
-     </Card>)}
-
-     
-    </div>
-  )
-}
-
-
+])
 ```
-## 37-4 Managing Status Codes and Fixing Credential Mismatch Issues
-- when user password does not match and not verified we are temporary handle this but not perfect way it is
-- loginForm.tsx
+## 38-2 Building the Dashboard Using ShadCN UI Blocks
+- absolute path /admin means 
+- relative path add-tour if you direct show to relative /admin/add-tour
+
 ```ts
-import { Button } from "@/components/ui/button";
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
-import { cn } from "@/lib/utils";
-import { useLoginMutation } from "@/redux/features/auth/auth.api";
-import { useForm, type FieldValues, type SubmitHandler } from "react-hook-form";
+   {
+      Component:DashboardLayout,
+      path:"/admin",
+      children:[
+        {
+          Component:Analytics,
+          path:"analytics"
+        },
+        {
+          Component:AddTour,
+          path:"add-tour"
+        },
+        {
+          Component:AddTour,
+          path:"/admin/add-tour"
+        }
+      ]
+    },
+```
+## 38-3 Generating Routes Dynamically from Sidebar Items
+- index.tsx
+```ts
+import App from "@/App";
+import DashboardLayout from "@/components/ui/layout/DashboardLayout";
+import { generateRoutes } from "@/components/ui/utils/generateRoutes";
 
-import { Link, useNavigate } from "react-router";
-import { toast } from "sonner";
+import About from "@/pages/About";
+import AddTour from "@/pages/Admin/AddTour";
+import Analytics from "@/pages/Admin/Analytics";
+import Login from "@/pages/login";
+import Register from "@/pages/Register";
+import Bookings from "@/pages/User/Bookings";
+import Verify from "@/pages/Verify";
 
-export function LoginForm({
-  className,
-  ...props
-}: React.HTMLAttributes<HTMLDivElement>) {
-  const navigate = useNavigate();
-  const form = useForm();
-  const [login] = useLoginMutation();
-  const onSubmit: SubmitHandler<FieldValues> = async (data) => {
-    try {
-      const res = await login(data).unwrap();
-      console.log(res);
-    } catch (err) {
-      console.error(err);
 
-     
-      if (err.data.message ==="Password Does Not Match") {
-        toast.error("Invalid Credentials");
-      }
-      
-       if (err.data.message === "User is Not Verified") {
-        toast.error("Your account is not verified");
-        navigate("/verify", { state: data.email });
-      }
-    }
-  };
 
-  return (
-    <div className={cn("flex flex-col gap-6", className)} {...props}>
-      <div className="flex flex-col items-center gap-2 text-center">
-        <h1 className="text-2xl font-bold">Login to your account</h1>
-        <p className="text-balance text-sm text-muted-foreground">
-          Enter your email below to login to your account
-        </p>
-      </div>
-      <div className="grid gap-6">
-        <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-            <FormField
-              control={form.control}
-              name="email"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Email</FormLabel>
-                  <FormControl>
-                    <Input
-                      placeholder="john@example.com"
-                      {...field}
-                      value={field.value || ""}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+import { createBrowserRouter } from "react-router";
+import { adminSidebarItems } from "./adminSidebarItems";
 
-            <FormField
-              control={form.control}
-              name="password"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Password</FormLabel>
-                  <FormControl>
-                    <Input
-                      type="password"
-                      placeholder="********"
-                      {...field}
-                      value={field.value || ""}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+export const router = createBrowserRouter([
+    {
+        Component:App,
+        path:"/",
+        children:[
+            {
+                Component:About,
+                path:"about"
+            }
+        ]
+    },
+    {
+      Component:DashboardLayout,
+      path:"/admin",
+      children:[...generateRoutes(adminSidebarItems)]
+    },
+    {
+      Component:DashboardLayout,
+      path:"/user",
+      children:[
+        {
+          Component:Bookings,
+          path:"bookings"
+        }
+      ]
+    },
+    {
+    Component: Login,
+    path: "/login",
+  },
+  {
+    Component: Register,
+    path: "/register",
+  },
+  {
+    Component: Verify,
+    path: "/verify",
+  },
+  
+])
+```
+- generateRoutes.tsx
+- use flat map
+```ts
+import type { ISidebarItem } from "@/types";
 
-            <Button type="submit" className="w-full">
-              Login
-            </Button>
-          </form>
-        </Form>
 
-        <div className="relative text-center text-sm after:absolute after:inset-0 after:top-1/2 after:z-0 after:flex after:items-center after:border-t after:border-border">
-          <span className="relative z-10 bg-background px-2 text-muted-foreground">
-            Or continue with
-          </span>
-        </div>
-
-        <Button
-          type="button"
-          variant="outline"
-          className="w-full cursor-pointer"
-        >
-          Login with Google
-        </Button>
-      </div>
-      <div className="text-center text-sm">
-        Don&apos;t have an account?{" "}
-        <Link to="/register" replace className="underline underline-offset-4">
-          Register
-        </Link>
-      </div>
-    </div>
+export const generateRoutes = (sidebarItems: ISidebarItem[]) => {
+  return sidebarItems.flatMap((section) =>
+    section.items.map((route) => ({
+      path: route.url,
+      Component: route.component,
+    }))
   );
-}
+};
 ```
-## 37-5 Handling useEffect Cleanup, Reset Button Functionality, and Overview of the cn Utility
-
-- clsx
-Purpose: Conditionally join multiple classes into a single string.
-
-Problem it solves:
-In React/JS, you often need to apply classes only if certain conditions are true.
-
-Example:
-import clsx from "clsx"
-```ts
-const Button = ({ primary, disabled }) => {
-  return (
-    <button
-      className={clsx(
-        "px-4 py-2 rounded",
-        primary && "bg-blue-500 text-white",
-        disabled && "opacity-50 cursor-not-allowed"
-      )}
-    >
-      Click me
-    </button>
-  )
-}
-```
--  Tailwind Merge (tailwind-merge)
-Purpose: Automatically resolve conflicts between Tailwind CSS classes.
-
-Problem it solves:
-In Tailwind, if you accidentally include two classes from the same group, you need to make sure only the correct one stays. tailwind-merge does that for you.
-
-Example:
-```ts
-import { twMerge } from "tailwind-merge"
-
-const Button = () => {
-  return (
-    <button
-      className={twMerge("px-4 py-2 bg-red-500", "bg-blue-500")}
-    >
-      Click me
-    </button>
-  )
-}
-```
+- adminSidebar.tsx
+```ts 
+import AddTour from "@/pages/Admin/AddTour";
+import Analytics from "@/pages/Admin/Analytics";
+import type { ISidebarItem } from "@/types";
 
 
-- Resent Otp handeling with timer 
-```ts
-import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import {
-  Form,
-  FormControl,
-  FormDescription,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/components/ui/form";
-import {
-  InputOTP,
-  InputOTPGroup,
-  InputOTPSlot,
-} from "@/components/ui/input-otp";
-import { cn } from "@/lib/utils";
-import {
-  useSendOtpMutation,
-  useVerifyOtpMutation,
-} from "@/redux/features/auth/auth.api";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { useEffect, useState } from "react";
-import { useForm } from "react-hook-form";
-import { useLocation, useNavigate } from "react-router";
-import { toast } from "sonner";
-import z from "zod";
 
-const FormSchema = z.object({
-  pin: z.string().min(6, {
-    message: "Your one-time password must be 6 characters.",
-  }),
-});
-export default function Verify() {
-  const location = useLocation();
-  const navigate = useNavigate();
-  const [email] = useState(location.state);
-  const [sendOtp] = useSendOtpMutation();
-  const [verifyOtp] = useVerifyOtpMutation();
-  const [confirmed, setConfirmed] = useState(false);
 
-  const [timer, setTimer] = useState(10);
-
-  const form = useForm<z.infer<typeof FormSchema>>({
-    resolver: zodResolver(FormSchema),
-    defaultValues: {
-      pin: "",
+export const adminSidebarItems :ISidebarItem[]= [
+    {
+      title: "Dashboard",
+   
+      items: [
+        {
+          title: "Analytics",
+          url: "/admin/analytics",
+          component:Analytics
+        },
+       
+      ],
     },
-  });
-
-  const handleSendOtp = async () => {
-    
-    const toastId = toast.loading("Sending OTP")
-    try {
-     const res = await sendOtp({email:email}).unwrap()
-     if(res.success){
-      toast.success("OTP sent",{id:toastId})
-      setConfirmed(true);
-       setTimer(10);
-     }
-    } catch (error) {
-      console.log(error)
+    {
+      title: "Tour Management",
+ 
+      items: [
+        {
+          title: "Add Tour",
+          url: "/admin/add-tour",
+          component:AddTour
+        },
+        {
+          title: "Add Tour",
+          url: "/admin/add-tour",
+          component:AddTour
+        }
+       
+      ],
     }
-  };
-
-  const onSubmit = async (data: z.infer<typeof FormSchema>) => {
-    const toastId = toast.loading("Verifying OTP");
-    const userInfo = {
-      email,
-      otp: data.pin,
-    };
-    try {
-      const res = await verifyOtp(userInfo).unwrap();
-      if (res.success) {
-        toast.success("OTP Verified", { id: toastId });
-        setConfirmed(true);
-      }
-    } catch (error) {
-      console.log(error);
-    }
-  };
-
-  // useEffect(()=>{
-  //   if(!email){
-  //     navigate("/")
-  //   }
-  // },[email])
-  // console.log(location)
-
-  useEffect(() => {
-    const timerId = setInterval(() => {
-      if (!email || !confirmed) {
-        return;
-      }
-      setTimer((prev) => (prev > 0 ? prev - 1 : 0));
-      console.log("tick");
-    }, 1000);
-    return () => clearInterval(timerId);
-  }, [confirmed, email]);
-  return (
-    <div className="grid place-content-center h-screen">
-      {confirmed ? (
-        <Card>
-          <CardHeader>
-            <CardTitle>Verify Your Email Address</CardTitle>
-            <CardDescription>
-              Please Enter the 6-digit code We sent To <br /> {email}
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <Form {...form}>
-              <form
-                id="otp-form"
-                onSubmit={form.handleSubmit(onSubmit)}
-                className=" space-y-6"
-              >
-                <FormField
-                  control={form.control}
-                  name="pin"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>One-Time Password</FormLabel>
-                      <FormControl>
-                        <InputOTP maxLength={6} {...field}>
-                          <InputOTPGroup>
-                            <InputOTPSlot index={0} />
-                          </InputOTPGroup>
-                          <InputOTPGroup>
-                            <InputOTPSlot index={1} />
-                          </InputOTPGroup>
-                          <InputOTPGroup>
-                            <InputOTPSlot index={2} />
-                          </InputOTPGroup>
-                          <InputOTPGroup>
-                            <InputOTPSlot index={3} />
-                          </InputOTPGroup>
-                          <InputOTPGroup>
-                            <InputOTPSlot index={4} />
-                          </InputOTPGroup>
-                          <InputOTPGroup>
-                            <InputOTPSlot index={5} />
-                          </InputOTPGroup>
-                        </InputOTP>
-                      </FormControl>
-                      <FormDescription>
-                        <Button
-                          onClick={handleSendOtp}
-                          variant="link"
-                          disabled={timer !== 0}
-                          className={cn("p-0 m-0",{
-                            "cursor-pointer": timer === 0,
-                            "text-gray-500":timer !== 0
-                          })}
-                        >
-                          Resent OTP:
-                        </Button>{" "}
-                        {timer}
-                      </FormDescription>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </form>
-            </Form>
-          </CardContent>
-          <CardFooter className="flex justify-end ">
-            <Button form="otp-form" type="submit">
-              Submit
-            </Button>
-          </CardFooter>
-        </Card>
-      ) : (
-        <Card>
-          <CardHeader>
-            <CardTitle>Verify Your Email Address</CardTitle>
-            <CardDescription>
-              We Will send you an OTP at <br /> {email}
-            </CardDescription>
-          </CardHeader>
-
-          <CardFooter className="flex justify-end ">
-            <Button onClick={handleSendOtp} className="w-[300px]">
-              Confirm
-            </Button>
-          </CardFooter>
-        </Card>
-      )}
-    </div>
-  );
-}
+   
+  ]
 ```
-## 37-6 Exploring Token Management Strategies and Choosing the Right Approach
-- token save 
-- 1 local storage not save ❌
-Problem:
+## 38-4 Rendering Sidebar Items Based on User Role
 
-Vulnerable to XSS attacks (any malicious JS on your site can read it).
+- src -> constants -> role.ts
 
-Stays in browser storage indefinitely unless explicitly removed.
-
-Attackers can steal it if they inject JS into your site.
 ```ts
-localStorage.setItem("token", "your-jwt-token");
+export const role = {
+  superAdmin: "SUPER_ADMIN",
+  admin: "ADMIN",
+  user: "USER",
+};
 ```
 
-- 2 local storage not save ❌ because when page reload token removed
-Difference from localStorage:
+- routes -> index.ts
 
-Data is removed automatically when the tab/window is closed.
-
-Still vulnerable to XSS attacks because JavaScript can read it.
-
-You said: “when page reload token removed” —
-Actually, sessionStorage survives a reload but not a full tab close.
-If your token disappears on reload, it might mean you're storing it in a React state instead of sessionStorage.
 ```ts
-sessionStorage.setItem("token", "your-jwt-token");
+import App from "@/App";
+import DashboardLayout from "@/components/layouts/DashboardLayout";
+import About from "@/pages/About";
+import Login from "@/pages/Login";
+import Register from "@/pages/Register";
+import Verify from "@/pages/verify";
+import { generateRoutes } from "@/utils/generateRoutes";
+
+import { createBrowserRouter } from "react-router";
+import { adminSidebarItems } from "./adminSidebarItems";
+import { userSidebarItems } from "./userSidebarItems";
+
+export const router = createBrowserRouter([
+  {
+    Component: App,
+    path: "/",
+    children: [
+      {
+        Component: About,
+        path: "about",
+      },
+    ],
+  },
+  {
+    Component: DashboardLayout,
+    path: "/admin",
+    children: [...generateRoutes(adminSidebarItems)],
+  },
+  {
+    Component: DashboardLayout,
+    path: "/user",
+    children: [...generateRoutes(userSidebarItems)],
+  },
+  {
+    Component: Login,
+    path: "login",
+  },
+  {
+    Component: Register,
+    path: "register",
+  },
+  {
+    Component: Verify,
+    path: "verify",
+  },
+]);
 ```
 
-- 3 token save in http only cookie ✅
-Token is sent from server as a Set-Cookie header:
+- types -> auth.types.ts
 
-```bash
-Set-Cookie: token=your-jwt-token; HttpOnly; Secure; SameSite=Strict
-```
-Browser stores it automatically.
-
-You don’t manage it with localStorage or sessionStorage.
-
-The cookie is sent automatically with every request to the server (based on domain).
-
-Why it’s better:
-
-HttpOnly → JavaScript cannot access it (prevents XSS theft).
-
-Secure → Sent only over HTTPS.
-
-SameSite → Reduces CSRF risk.
-
-Drawback:
-
-Slightly harder to manage with APIs like fetch (need credentials: "include").
-
-## 37-7 Accessing Cookies on the Client Side
-- update backend setCookie.ts
-- secure true if not true cookie not save in browser
 ```ts
-import { Response } from "express";
+import type { ComponentType } from "react";
 
-export interface AuthCookies {
-  accessToken?: string;
-  refreshToken?: string;
+export interface ISendOtp {
+  email: string;
 }
 
-export const setAuthCookie = (res: Response, tokenInfo: AuthCookies) => {
-  if (tokenInfo.accessToken) {
-      res.cookie("accessToken", tokenInfo.accessToken, {
-      httpOnly: true,
-      secure: true,
-      sameSite:"none"
-    });
-  }
-  if (tokenInfo.refreshToken) {
-      res.cookie("refreshToken", tokenInfo.refreshToken, {
-      httpOnly: true,
-      secure: true,
-      sameSite:"none"
-    });
+export interface IVerifyOtp {
+  email: string;
+  otp: string;
+}
+
+export interface ILogin {
+  email: string;
+  password: string;
+}
+
+export interface ISidebarItems {
+  title: string;
+  items: {
+    title: string;
+    url: string;
+    component: ComponentType;
+  }[];
+}
+
+export type TRole = "SUPER_ADMIN" | "ADMIN" | "USER";
+```
+
+- utils - > getSidebarItem.ts
+
+```ts
+import { role } from "@/constants/role";
+import { adminSidebarItems } from "@/routes/adminSidebarItems";
+import { userSidebarItems } from "@/routes/userSidebarItems";
+import type { TRole } from "@/types";
+
+export const generateSidebarItems = (userRole: TRole) => {
+  switch (userRole) {
+    case role.superAdmin: {
+      return [...adminSidebarItems];
+    }
+    case role.admin: {
+      return [...adminSidebarItems];
+    }
+
+    case role.user: {
+      return [...userSidebarItems];
+    }
+    default:
+      return [];
   }
 };
-
-// before deploy
-// import { Response } from "express";
-
-// export interface AuthCookies {
-//   accessToken?: string;
-//   refreshToken?: string;
-// }
-
-// export const setAuthCookie = (res: Response, tokenInfo: AuthCookies) => {
-//   if (tokenInfo.accessToken) {
-//       res.cookie("accessToken", tokenInfo.accessToken, {
-//       httpOnly: true,
-//       sameSite:false
-//     });
-//   }
-//   if (tokenInfo.refreshToken) {
-//       res.cookie("refreshToken", tokenInfo.refreshToken, {
-//       httpOnly: true,
- 
-//        sameSite:false
-//     });
-//   }
-// };
-```
-- baseApi.ts
-- if you not work axios update this as like
-```ts
-import { createApi, fetchBaseQuery} from '@reduxjs/toolkit/query/react'
-import axiosBaseQuery from './axiosBaseQuery'
-
-export const baseApi = createApi({
-    reducerPath:"baseApi",
-    // baseQuery:axiosBaseQuery(),
-      baseQuery:fetchBaseQuery({
-        baseUrl:config.baseUrl,
-        credentials:"include"
-    }),
-    endpoints:() => ({})
-})  
-```
-## 37-8 Implementing Google Login and Fixing Backend Authorization   
-- axios.ts must be add withCredentials: true
-```ts
-import config from "@/config";
-import axios from "axios"
-
-export const axiosInstance = axios.create({
-  baseURL: config.baseUrl,
-  withCredentials:true
-});
-
-
-// Add a request interceptor
-axiosInstance.interceptors.request.use(function (config) {
-    // Do something before request is sent
-    return config;
-  }, function (error) {
-    // Do something with request error
-    return Promise.reject(error);
-  },
-
-);
-
-// Add a response interceptor
-axiosInstance.interceptors.response.use(function onFulfilled(response) {
-    // Any status code that lie within the range of 2xx cause this function to trigger
-    // Do something with response data
-    return response;
-  }, function onRejected(error) {
-    // Any status codes that falls outside the range of 2xx cause this function to trigger
-    // Do something with response error
-    return Promise.reject(error);
-  });
 ```
 
-- update backend checkAuth
+- components -> app-sidebar.tsx
+
+```tsx
+import * as React from "react";
+
+import {
+  Sidebar,
+  SidebarContent,
+  SidebarGroup,
+  SidebarGroupContent,
+  SidebarGroupLabel,
+  SidebarHeader,
+  SidebarMenu,
+  SidebarMenuButton,
+  SidebarMenuItem,
+  SidebarRail,
+} from "@/components/ui/sidebar";
+import Logo from "@/assets/icons/Logo";
+import { Link } from "react-router";
+import { generateSidebarItems } from "@/utils/generateSidebarItems";
+import { useUserInfoQuery } from "@/redux/features/auth/auth.api";
+
+export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
+  const { data: userData } = useUserInfoQuery(undefined);
+  // This is sample data.
+  const data = {
+    navMain: generateSidebarItems(userData?.data?.role),
+  };
+
+  console.log(data);
+  return (
+    <Sidebar {...props}>
+      <SidebarHeader>
+        <Logo />
+      </SidebarHeader>
+      <SidebarContent>
+        {/* We create a SidebarGroup for each parent. */}
+        {data.navMain.map((item) => (
+          <SidebarGroup key={item.title}>
+            <SidebarGroupLabel>{item.title}</SidebarGroupLabel>
+            <SidebarGroupContent>
+              <SidebarMenu>
+                {item.items.map((item) => (
+                  <SidebarMenuItem key={item.title}>
+                    <SidebarMenuButton asChild>
+                      <Link to={item.url}>{item.title}</Link>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                ))}
+              </SidebarMenu>
+            </SidebarGroupContent>
+          </SidebarGroup>
+        ))}
+      </SidebarContent>
+      <SidebarRail />
+    </Sidebar>
+  );
+}
+```
+
+## 38-5 Recap and Discussion on Completed Work
+
+- we can grant access more to superAdmin
+
 ```ts
-const accessToken = req.headers.authorization ||✅ req.cookies.accessToken;
-    if(!accessToken){
-      throw new AppError(403,"No token Received");
-      
+import { role } from "@/constants/role";
+import { adminSidebarItems } from "@/routes/adminSidebarItems";
+import { userSidebarItems } from "@/routes/userSidebarItems";
+import type { TRole } from "@/types";
+
+export const generateSidebarItems = (userRole: TRole) => {
+  switch (userRole) {
+    case role.superAdmin: {
+      return [...adminSidebarItems, ...userSidebarItems]; // multi access
     }
+    case role.admin: {
+      return [...adminSidebarItems];
+    }
+
+    case role.user: {
+      return [...userSidebarItems];
+    }
+    default:
+      return [];
+  }
+};
 ```
-- loginForm.tsx
-```ts
-  <Button
-        onClick={()=> window.open(`${config.baseUrl}/auth/google`)}
-          type="button"
-          variant="outline"
-          className="w-full cursor-pointer"
-        >
-          Login with Google
-        </Button>
-```
 
-- axios.ts
-```ts
-export const axiosInstance = axios.create({
-  baseURL: config.baseUrl,
- withCredentials:true
-});
-```
-- auth.api.ts
-```ts
-import { baseApi } from "@/redux/baseApi";
-import type { IResponse, ISendOtp, IVerifyOtp } from "@/types";
+- Navbar.tsx
 
-
-
-
-const authApi = baseApi.injectEndpoints({
-  endpoints: (builder) => ({
-    login: builder.mutation({
-      query: (userInfo) => ({
-        url: "/auth/login",
-        method: "POST",
-        data: userInfo,
-      }),
-    }),
-    logout: builder.mutation({
-      query: () => ({
-        url: "/auth/logout",
-        method: "POST",
-      }),
-    }),
-    register: builder.mutation({
-      query: (userInfo) => ({
-        url: "/user/register",
-        method: "POST",
-        data: userInfo,
-      }),
-    }),
-    sendOtp: builder.mutation<IResponse<null>,ISendOtp>({
-      query: (userInfo) => ({
-        url: "/otp/send",
-        method: "POST",
-        data: userInfo,
-      }),
-    }),
-    verifyOtp: builder.mutation<IResponse<null>,IVerifyOtp>({
-      query: (userInfo) => ({
-        url: "/otp/verify",
-        method: "POST",
-        data: userInfo,
-      }),
-    }),
-    userInfo: builder.query({
-      query: () => ({
-        url: "/user/me",
-        method: "GET",
-      }),
-    }),
-  }),
-});
-
-export const { useRegisterMutation, useLoginMutation,useSendOtpMutation,useVerifyOtpMutation,useUserInfoQuery,useLogoutMutation } = authApi;
-```
-- navbar.ts
-```ts
-
-
-import { Button } from "@/components/ui/button"
+```tsx
+import Logo from "@/assets/icons/Logo";
+import { Button } from "@/components/ui/button";
 import {
   NavigationMenu,
   NavigationMenuItem,
   NavigationMenuLink,
   NavigationMenuList,
-} from "@/components/ui/navigation-menu"
+} from "@/components/ui/navigation-menu";
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from "@/components/ui/popover"
-import { ModeToggle } from "./ModeToggler"
-import Logo from "@/assets/icons/Logo"
-import { Link } from "react-router"
-import { useLogoutMutation, useUserInfoQuery } from "@/redux/features/auth/auth.api"
+} from "@/components/ui/popover";
+import { ModeToggle } from "./ModeToggler";
+import { Link } from "react-router";
+import {
+  authApi,
+  useLogoutMutation,
+  useUserInfoQuery,
+} from "@/redux/features/auth/auth.api";
+import { useAppDispatch } from "@/redux/hook";
+import { role } from "@/constants/role";
 
 // Navigation links array to be used in both desktop and mobile menus
 const navigationLinks = [
-  { href: "/", label: "Home" },
-  { href: "/about", label: "About" },
-
-]
+  { href: "/", label: "Home", role: "PUBLIC" },
+  { href: "/about", label: "About", role: "PUBLIC" },
+  { href: "/admin", label: "Dashboard", role: role.admin },
+  { href: "/user", label: "Dashboard", role: role.user },
+];
 
 export default function Navbar() {
-  const {data}=useUserInfoQuery(undefined)
- 
-  const [logout]=useLogoutMutation()
-  const handleLogout =()=>{
-    logout(undefined)
-  }
- 
+  const { data } = useUserInfoQuery(undefined);
+  const [logout] = useLogoutMutation();
+  const dispatch = useAppDispatch();
+  console.log(data?.data?.email);
+
+  const handleLogout = async () => {
+    await logout(undefined);
+    dispatch(authApi.util.resetApiState());
+  };
+
   return (
-    <header className="border-b ">
-      <div className="container mx-auto px-4  flex h-16 items-center justify-between gap-4">
+    <header className="border-b">
+      <div className="container mx-auto px-4 flex h-16 items-center justify-between gap-4">
         {/* Left side */}
         <div className="flex items-center gap-2">
           {/* Mobile menu trigger */}
@@ -1127,12 +509,8 @@ export default function Navbar() {
                 <NavigationMenuList className="flex-col items-start gap-0 md:gap-2">
                   {navigationLinks.map((link, index) => (
                     <NavigationMenuItem key={index} className="w-full">
-                      <NavigationMenuLink
-                        href={link.href}
-                        className="py-1.5"
-                        
-                      >
-                         <Link to={link.href}> {link.label}</Link>
+                      <NavigationMenuLink asChild className="py-1.5">
+                        <Link to={link.href}>{link.label} </Link>
                       </NavigationMenuLink>
                     </NavigationMenuItem>
                   ))}
@@ -1151,11 +529,10 @@ export default function Navbar() {
                 {navigationLinks.map((link, index) => (
                   <NavigationMenuItem key={index}>
                     <NavigationMenuLink
-                    asChild
-                     className="text-muted-foreground hover:text-primary py-1.5 font-medium"
+                      asChild
+                      className="text-muted-foreground hover:text-primary py-1.5 font-medium"
                     >
-                      <Link to={link.href}> {link.label}</Link>
-                     
+                      <Link to={link.href}>{link.label}</Link>
                     </NavigationMenuLink>
                   </NavigationMenuItem>
                 ))}
@@ -1165,68 +542,78 @@ export default function Navbar() {
         </div>
         {/* Right side */}
         <div className="flex items-center gap-2">
-          <ModeToggle/>
-        {data?.data?.email && (
-            <Button onClick={handleLogout} variant="outline"  className="text-sm">
-            Logout
-          </Button>
-        )}
-    {!data?.data?.email && (
-        <Button asChild  className="text-sm">
-        <Link to="/login">Login</Link>
-      </Button>)}
-       
+          <ModeToggle />
+          {data?.data?.email && (
+            <Button
+              onClick={handleLogout}
+              variant="outline"
+              className="text-sm"
+            >
+              Logout
+            </Button>
+          )}
+          {!data?.data?.email && (
+            <Button asChild className="text-sm">
+              <Link to="/login">Login</Link>
+            </Button>
+          )}
         </div>
       </div>
     </header>
-  )
+  );
 }
-
 ```
-## 37-10 Understanding Cache Invalidation, Auto Refetching, and apiStateReset Mechanism
-- navbar.tsx
-```ts
 
+## 38-6 UX and Performance Enhancements with Lazy Loading
 
-import { Button } from "@/components/ui/button"
+- Navbar.tsx (update in Dashboard Button)
+
+```tsx
+import Logo from "@/assets/icons/Logo";
+import { Button } from "@/components/ui/button";
 import {
   NavigationMenu,
   NavigationMenuItem,
   NavigationMenuLink,
   NavigationMenuList,
-} from "@/components/ui/navigation-menu"
+} from "@/components/ui/navigation-menu";
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from "@/components/ui/popover"
-import { ModeToggle } from "./ModeToggler"
-import Logo from "@/assets/icons/Logo"
-import { Link } from "react-router"
-import { authApi, useLogoutMutation, useUserInfoQuery } from "@/redux/features/auth/auth.api"
-import { useAppDispatch } from "@/redux/hook"
+} from "@/components/ui/popover";
+import { ModeToggle } from "./ModeToggler";
+import { Link } from "react-router";
+import {
+  authApi,
+  useLogoutMutation,
+  useUserInfoQuery,
+} from "@/redux/features/auth/auth.api";
+import { useAppDispatch } from "@/redux/hook";
+import { role } from "@/constants/role";
 
 // Navigation links array to be used in both desktop and mobile menus
 const navigationLinks = [
-  { href: "/", label: "Home" },
-  { href: "/about", label: "About" },
-
-]
+  { href: "/", label: "Home", role: "PUBLIC" },
+  { href: "/about", label: "About", role: "PUBLIC" },
+  { href: "/admin", label: "Dashboard", role: role.admin },
+  { href: "/admin", label: "Dashboard", role: role.superAdmin },
+  { href: "/user", label: "Dashboard", role: role.user },
+];
 
 export default function Navbar() {
-  const {data}=useUserInfoQuery(undefined)
- 
-  const [logout]=useLogoutMutation()
-  const dispatch = useAppDispatch()
-  console.log(data?.data?.email)
-  const handleLogout =async ()=>{
-   await logout(undefined)
-    dispatch(authApi.util.resetApiState())
-  }
- 
+  const { data } = useUserInfoQuery(undefined);
+  const [logout] = useLogoutMutation();
+  const dispatch = useAppDispatch();
+
+  const handleLogout = async () => {
+    await logout(undefined);
+    dispatch(authApi.util.resetApiState());
+  };
+
   return (
-    <header className="border-b ">
-      <div className="container mx-auto px-4  flex h-16 items-center justify-between gap-4">
+    <header className="border-b">
+      <div className="container mx-auto px-4 flex h-16 items-center justify-between gap-4">
         {/* Left side */}
         <div className="flex items-center gap-2">
           {/* Mobile menu trigger */}
@@ -1269,12 +656,8 @@ export default function Navbar() {
                 <NavigationMenuList className="flex-col items-start gap-0 md:gap-2">
                   {navigationLinks.map((link, index) => (
                     <NavigationMenuItem key={index} className="w-full">
-                      <NavigationMenuLink
-                        href={link.href}
-                        className="py-1.5"
-                        
-                      >
-                         <Link to={link.href}> {link.label}</Link>
+                      <NavigationMenuLink asChild className="py-1.5">
+                        <Link to={link.href}>{link.label} </Link>
                       </NavigationMenuLink>
                     </NavigationMenuItem>
                   ))}
@@ -1291,15 +674,28 @@ export default function Navbar() {
             <NavigationMenu className="max-md:hidden">
               <NavigationMenuList className="gap-2">
                 {navigationLinks.map((link, index) => (
-                  <NavigationMenuItem key={index}>
-                    <NavigationMenuLink
-                    asChild
-                     className="text-muted-foreground hover:text-primary py-1.5 font-medium"
-                    >
-                      <Link to={link.href}> {link.label}</Link>
-                     
-                    </NavigationMenuLink>
-                  </NavigationMenuItem>
+                  <>
+                    {link.role === "PUBLIC" && (
+                      <NavigationMenuItem key={index}>
+                        <NavigationMenuLink
+                          asChild
+                          className="text-muted-foreground hover:text-primary py-1.5 font-medium"
+                        >
+                          <Link to={link.href}>{link.label}</Link>
+                        </NavigationMenuLink>
+                      </NavigationMenuItem>
+                    )}
+                    {link.role === data?.data?.role && (
+                      <NavigationMenuItem key={index}>
+                        <NavigationMenuLink
+                          asChild
+                          className="text-muted-foreground hover:text-primary py-1.5 font-medium"
+                        >
+                          <Link to={link.href}>{link.label}</Link>
+                        </NavigationMenuLink>
+                      </NavigationMenuItem>
+                    )}
+                  </>
                 ))}
               </NavigationMenuList>
             </NavigationMenu>
@@ -1307,77 +703,90 @@ export default function Navbar() {
         </div>
         {/* Right side */}
         <div className="flex items-center gap-2">
-          <ModeToggle/>
-        {data?.data?.email && (
-            <Button onClick={handleLogout} variant="outline"  className="text-sm">
-            Logout
-          </Button>
-        )}
-    {!data?.data?.email && (
-        <Button asChild  className="text-sm">
-        <Link to="/login">Login</Link>
-      </Button>)}
-       
+          <ModeToggle />
+          {data?.data?.email && (
+            <Button
+              onClick={handleLogout}
+              variant="outline"
+              className="text-sm"
+            >
+              Logout
+            </Button>
+          )}
+          {!data?.data?.email && (
+            <Button asChild className="text-sm">
+              <Link to="/login">Login</Link>
+            </Button>
+          )}
         </div>
       </div>
     </header>
-  )
+  );
 }
 ```
-- auth.api.ts
+
+- routes -> index.ts
+
 ```ts
-import { baseApi } from "@/redux/baseApi";
-import type { IResponse, ISendOtp, IVerifyOtp } from "@/types";
+        {
+            Component: DashboardLayout,
+            path: "/admin",
 
+            children: [
+                {index : true, element : <Navigate to="/admin/analytics"/>},
+                ...generateRoutes(adminSidebarItems)]
+        },
+```
 
+- This Will by default navigate to the analytic page if we hit admin page.
 
+#### Lazy Loading
 
-export const authApi = baseApi.injectEndpoints({
-  endpoints: (builder) => ({
-    login: builder.mutation({
-      query: (userInfo) => ({
-        url: "/auth/login",
-        method: "POST",
-        data: userInfo,
-      }),
-    }),
-    logout: builder.mutation({
-      query: () => ({
-        url: "/auth/logout",
-        method: "POST",
-      }),
-      invalidatesTags:["USER"]
-    }),
-    register: builder.mutation({
-      query: (userInfo) => ({
-        url: "/user/register",
-        method: "POST",
-        data: userInfo,
-      }),
-    }),
-    sendOtp: builder.mutation<IResponse<null>,ISendOtp>({
-      query: (userInfo) => ({
-        url: "/otp/send",
-        method: "POST",
-        data: userInfo,
-      }),
-    }),
-    verifyOtp: builder.mutation<IResponse<null>,IVerifyOtp>({
-      query: (userInfo) => ({
-        url: "/otp/verify",
-        method: "POST",
-        data: userInfo,
-      }),
-    }),
-    userInfo: builder.query({
-      query: () => ({
-        url: "/user/me",
-        method: "GET",
-      }),
-      providesTags:["USER"]
-    }),
-  }),
-});
+- Lazy loading in React means loading components only when needed, using React.lazy and Suspense (or other code-splitting techniques), which makes your app faster to load and more efficient.
 
-export const { useRegisterMutation, useLoginMutation,useSendOtpMutation,useVerifyOtpMutation,useUserInfoQuery,useLogoutMutation } = authApi;
+- The problem of the site is now that in client side rendering the browser tries to load the ts js or tsx files then loads the contents. For home page public pages its ok. But the problem is its also loading the private route element like `Analytics.tsx` which is not required to load as its a admin route. W can prevent this by using `lazy loading`. Lazy Loading only loads the component when the component related functions are hit.
+
+- adminSidebarItems.tsx
+
+```ts
+const Analytics = lazy(() => import("@/pages/Admin/Analytics"));
+```
+
+```tsx
+import AddTour from "@/pages/Admin/AddTour";
+
+import type { ISidebarItems } from "@/types";
+import { lazy } from "react";
+
+// import Analytics from "@/pages/Admin/Analytics";
+
+const Analytics = lazy(() => import("@/pages/Admin/Analytics"));
+
+export const adminSidebarItems: ISidebarItems[] = [
+  {
+    title: "Dashboard",
+    items: [
+      {
+        title: "Analytics",
+        url: "/admin/analytics",
+        component: Analytics,
+      },
+    ],
+  },
+  {
+    title: "Tour Management",
+    items: [
+      {
+        title: "Add Tour",
+        url: "/admin/add-tour",
+        component: AddTour,
+      },
+      {
+        title: "Add Tour Type",
+        url: "/admin/add-tour-type",
+        component: AddTour,
+      },
+    ],
+  },
+];
 ```

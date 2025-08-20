@@ -1,9 +1,14 @@
-import React from 'react'
+import { AddDivisionModal } from "@/components/ui/modules/Admin/Division/AddDivisionModal";
 
-export default function AddDivision() {
+
+
+const AddDivision = () => {
   return (
     <div>
-    Division
+      <h1>This is AddDivision component</h1>
+      <AddDivisionModal/>
     </div>
-  )
-}
+  );
+};
+
+export default AddDivision;

@@ -105,19 +105,7 @@ export default function SingleImageUploader({onChange} : any) {
         </div>
       )}
 
-      <p
-        aria-live="polite"
-        role="region"
-        className="text-muted-foreground mt-2 text-center text-xs"
-      >
-        Single image uploader w/ max size ∙{" "}
-        <a
-          href="https://github.com/origin-space/originui/tree/main/docs/use-file-upload.md"
-          className="hover:text-foreground underline"
-        >
-          API
-        </a>
-      </p>
+   
     </div>
   )
 }

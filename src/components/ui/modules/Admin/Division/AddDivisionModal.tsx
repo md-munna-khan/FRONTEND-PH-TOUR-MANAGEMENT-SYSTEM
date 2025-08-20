@@ -109,7 +109,7 @@ export function AddDivisionModal() {
           <DialogClose asChild>
             <Button variant="outline">Cancel</Button>
           </DialogClose>
-          <Button type="submit" form="add-division">
+          <Button disabled={!image} type="submit" form="add-division">
             Save changes
           </Button>
         </DialogFooter>

@@ -19,4 +19,11 @@ export interface ISidebarItem {
   }[]
 }
 
+// types.ts
+export interface IErrorResponse {
+  statusCode: number;
+  message: string;
+  errors?: string[];
+}
+
 export type TRole = "SUPER_ADMIN" | "ADMIN" | "USER";

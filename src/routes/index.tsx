@@ -18,12 +18,17 @@ import { withAuth } from "@/components/ui/utils/withAuth";
 import Unauthorized from "@/pages/Unauthorized";
 import { role } from "@/constants/role";
 import type { TRole } from "@/types";
+import { HomePage } from "@/pages/Homepage";
 
 export const router = createBrowserRouter([
     {
         Component:App,
         path:"/",
         children:[
+         {
+       Component:HomePage,
+        index:true
+         },
             {
                 Component: withAuth(About),
                 path:"about"
